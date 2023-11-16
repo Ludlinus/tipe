@@ -39,6 +39,8 @@ liste_graphes = [
     TrainingCycle(59, 3, 47, 78, 18),
     TrainingCycle(12, 1, 9, 78, 79),
     TrainingCycle(12, 3, 6, 77, 3),
+    ]
+liste_graphes_supplementaires = [
     TrainingCycle(96, 10, 91, 91, 0),
     TrainingCycle(15, 2, 13, 30, 92),
     TrainingCycle(65, 27, 37, 43, 39),
