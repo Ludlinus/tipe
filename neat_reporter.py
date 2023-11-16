@@ -8,7 +8,7 @@ class WANDB_Reporter(object):
         self.generation = generation
 
     def end_generation(self, config, population, species_set):
-        self.numberOfSpecies = len(species_set.species)
+        wandb.log({"nbOfSpecies":len(species_set.species)})
 
     def post_evaluate(self, config, population, species, best_genome):
         fitnesses = [c.fitness for c in population.values()]
@@ -17,7 +17,6 @@ class WANDB_Reporter(object):
 
         wandb.log({
             "epoch": self.generation,
-            "numberOfSpecies": self.numberOfSpecies,
             "fit_mean": fit_mean,
             "fit_std": fit_std,
         })
