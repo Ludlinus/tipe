@@ -4,9 +4,11 @@ import wandb
 import neat_reporter
 
 wandb_API = wandb.Api()
-sweeps = wandb_API.project()[0].sweeps()
+sweep = wandb_API.project()[0].sweeps()[0]
 
-sweep_id = sweeps[0].id
+sweep_id = sweep.id
+run_name = sweep.best_run(order="-created_at").name
+run_name = run_name[:run_name.rfind('.')]+str(int(run_name[run_name.rfind('.')+1:])+1)
 
 
 class TrainingCycle:
