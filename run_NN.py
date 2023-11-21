@@ -4,7 +4,7 @@ import wandb
 import neat_reporter
 
 wandb_API = wandb.Api()
-sweep = wandb_API.project()[0].sweeps()[0]
+sweep = wandb_API.projects()[0].sweeps()[0]
 
 sweep_id = sweep.id
 run_name = sweep.best_run(order="-created_at").name

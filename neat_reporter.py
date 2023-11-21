@@ -24,7 +24,7 @@ class WANDB_Reporter(object):
         })
 
     def post_reproduction(self, config, population, species):
-        continue
+        pass
 
     def complete_extinction(self):
         pass
