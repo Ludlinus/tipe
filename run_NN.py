@@ -3,7 +3,10 @@ import tqdm
 import wandb
 import neat_reporter
 
-sweep_id = "wzmozwu2"
+wandb_API = wandb.Api()
+sweeps = wandb_API.project()[0].sweeps()
+
+sweep_id = sweeps[0].id
 
 
 class TrainingCycle:
@@ -150,7 +153,7 @@ def entrainement():
 
     p.add_reporter(neat_reporter.WANDB_Reporter())
 
-    run_result = p.run(eval_genomes, 100)
+    run_result = p.run(eval_genomes, 1_000)
     wandb.log_artifact(run_result)
 
     wandb.finish()
