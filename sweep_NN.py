@@ -5,7 +5,7 @@ wandb.login(key="1b1a372f1e56f15f8c0a2fd3cd93c5f5f5ca1dae")
 
 sweep_configuration = {
     "method": "bayes",
-    "name": "sweep_2",
+    "name": "sweep_3",
     "metric": {"goal": "maximize", "name": "fit_mean"},
     "parameters": {
         "node_add_prob": {"max": 0.01, "min": 0.001},
