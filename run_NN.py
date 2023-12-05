@@ -4,11 +4,13 @@ import wandb
 import neat_reporter
 
 wandb_API = wandb.Api()
-sweep = wandb_API.projects()[0].sweeps()[0]
+#sweep = wandb_API.project("sweat_pas_rose/TIPE-2").sweeps()[0]
+sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/wzmozwu2")
+
 
 sweep_id = sweep.id
 run_name = sweep.best_run(order="-created_at").name
-run_name = run_name[:run_name.rfind('.')]+str(int(run_name[run_name.rfind('.')+1:])+1)
+run_name = run_name[:run_name.rfind('.')]+"."+str(int(run_name[run_name.rfind('.')+1:])+1)
 
 
 class TrainingCycle:
@@ -129,7 +131,11 @@ def eval_genomes(genomes, config):
 
 
 def entrainement():
-    wandb.init()
+    sweep_id = sweep.id
+    run_name = sweep.best_run(order="-created_at").name
+    run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
+
+    wandb.init(name=run_name)
 
     config_file = "config_1.txt"
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -162,7 +168,7 @@ def entrainement():
 
 
 def main():
-    wandb.agent(sweep_id=sweep_id,function=entrainement, project="TIPE-2")
+    wandb.agent(sweep_id=sweep_id,function=entrainement, project="TIPE-2", entity="sweat_pas_rose")
 
 
 if '__name__' == '__main__':
