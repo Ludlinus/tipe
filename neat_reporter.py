@@ -8,21 +8,23 @@ class WANDB_Reporter(object):
         self.generation = generation
 
     def end_generation(self, config, population, species_set):
-        wandb.log({"nbOfSpecies":len(species_set.species)})
+        pass
 
     def post_evaluate(self, config, population, species, best_genome):
         fitnesses = [c.fitness for c in population.values()]
-        fit_mean = mean(fitnesses)
-        fit_std = stdev(fitnesses)
+        #fit_mean = mean(fitnesses)
+        #fit_std = stdev(fitnesses)
+        #nbOfSpecies = len(species_set.species)
 
         wandb.log({
             "epoch": self.generation,
-            "fit_mean": fit_mean,
-            "fit_std": fit_std,
+            "fit_mean": mean(fitnesses),
+            "fit_std": stdev(fitnesses),
+            "nbOfSpecies":len(species.species)
         })
 
     def post_reproduction(self, config, population, species):
-        pass
+        continue
 
     def complete_extinction(self):
         pass
