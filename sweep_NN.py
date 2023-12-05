@@ -18,5 +18,3 @@ sweep_configuration = {
     },
 }
 sweep_id = wandb.sweep(sweep=sweep_configuration, project="TIPE-2", entity="sweat_pas_rose")
-
-run_NN.main()
