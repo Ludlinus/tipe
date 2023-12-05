@@ -168,5 +168,5 @@ def main():
     wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose")
 
 
-if '__name__' == '__main__':
+if __name__ == '__main__':
     main()
