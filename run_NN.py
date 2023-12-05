@@ -111,7 +111,7 @@ def eval_genomes(genomes, config):
                 pos_1 += derniereAction_1  # les agents se déplacent ou pas
                 pos_2 += derniereAction_2
 
-                pos_1 %= taille_cycle  # ?
+                pos_1 %= taille_cycle  # Si les agents ont fait le tour du graphe, leur position revient à 0
                 pos_2 %= taille_cycle
 
                 if abs(pos_1 - pos_2) < dist_min:
@@ -128,8 +128,7 @@ def eval_genomes(genomes, config):
 
 
 def entrainement():
-    sweep_id = sweep.id
-    run_name = sweep.best_run(order="-created_at").name
+    run_name = sorted([run.name for run in sweep.runs], reverse=True)[0]
     run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
 
     wandb.init(name=run_name)
@@ -157,9 +156,14 @@ def entrainement():
     p = neat.Population(config)
 
     p.add_reporter(neat_reporter.WANDB_Reporter())
+    p.add_reporter(neat.checkpoint.Checkpointer(generation_interval=500, time_interval_seconds=None,
+                                                filename_prefix='saves/neat-checkpoint-'))
 
-    run_result = p.run(eval_genomes, 1_000)
-    wandb.log_artifact(run_result)
+    artifactToSave = wandb.Artifact(name="neat_checkpoints_" + str(wandb.run.name), type="neat_checkpoints")
+    artifactToSave.add_dir("saves")
+    artifactToSave.save()
+
+    run_result = p.run(eval_genomes, 1_001)  # 1000 +1 pour être certain d'enregistrer le dernier checkpoint
 
     wandb.finish()
 
