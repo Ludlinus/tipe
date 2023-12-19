@@ -128,7 +128,7 @@ def eval_genomes(genomes, config):
 
 
 def entrainement():
-    run_name = sorted([run.name for run in sweep.runs], reverse=True)[0]
+    run_name = sorted([run.name for run in sweep.runs], reverse=True)[1]
     run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
 
     wandb.init(name=run_name)
