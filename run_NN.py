@@ -5,6 +5,11 @@ import neat_reporter
 import wandb
 
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument("--counter", action='store', default=1)
+args = parser.parse_args()
 
 wandb_API = wandb.Api()
 # sweep = wandb_API.project("sweat_pas_rose/TIPE-2").sweeps()[0]
@@ -175,7 +180,7 @@ def entrainement():
 
 
 def main():
-    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count=1)
+    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count=args.counter)
 
 
 if __name__ == '__main__':
