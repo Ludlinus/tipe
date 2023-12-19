@@ -4,11 +4,17 @@ import tqdm
 import neat_reporter
 import wandb
 
+import os
+
 wandb_API = wandb.Api()
 # sweep = wandb_API.project("sweat_pas_rose/TIPE-2").sweeps()[0]
 sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/8vbeeuy7")
 sweep_id = sweep.id
 
+try:
+    os.mkdir("./saves")
+except FileExistsError:
+    pass
 
 class TrainingCycle:
     def __init__(self, taille, pos1, pos2, label1, label2):  # label 1/2: identifiant de l'agent 1/2
