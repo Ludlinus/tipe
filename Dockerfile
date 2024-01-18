@@ -1,8 +1,8 @@
+RUN echo "arth est gay"
+
 FROM python:latest 
 
 WORKDIR /usr/local/bin
-
-RUN echo "arth est gay"
 
 COPY requirements.txt .
 COPY run_NN.py .
