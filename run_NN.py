@@ -18,15 +18,16 @@ class TrainingCycle:
 
 
 liste_graphes = [
-    TrainingCycle(84, 39, 77, 23, 62),
-    TrainingCycle(11, 3, 7, 39, 56),
-    TrainingCycle(73, 18, 38, 85, 20),
-    TrainingCycle(53, 22, 48, 6, 7),
-    TrainingCycle(65, 28, 59, 52, 98),
-    TrainingCycle(27, 7, 20, 23, 27),
-    TrainingCycle(59, 3, 47, 78, 18),
-    TrainingCycle(12, 1, 9, 78, 79),
-    TrainingCycle(12, 3, 6, 77, 3),
+    TrainingCycle(10, 3, 7, 39, 56),
+    TrainingCycle(20, 18, 5, 85, 20),
+    TrainingCycle(30, 22, 7, 6, 7),
+    TrainingCycle(30, 10, 29, 52, 98),
+    TrainingCycle(40, 7, 20, 23, 27),
+    TrainingCycle(40, 3, 15, 78, 18),
+    TrainingCycle(50, 1, 34, 78, 79),
+    TrainingCycle(50, 3, 6, 77, 3),
+    TrainingCycle(10, 5, 2, 91, 0),
+    TrainingCycle(10, 2, 7, 30, 92),
 ]
 liste_graphes_supplementaires = [
     TrainingCycle(96, 10, 91, 91, 0),
@@ -128,8 +129,11 @@ def eval_genomes(genomes, config):
 
 
 def entrainement():
-    run_name = sorted([run.name for run in sweep.runs], reverse=True)[0]
-    run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
+    run_name = sorted([run.name for run in sweep.runs], reverse= True)[1]
+    run_name = int(str(run_name)[-1]) + 1
+
+    #run_name = sorted([run.name for run in sweep.runs], reverse=True)[0]
+    #run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
 
     wandb.init(name=run_name)
 
@@ -142,16 +146,17 @@ def entrainement():
     config.genome_config.node_add_prob = wandb.config.node_add_prob
     config.genome_config.node_delete_prob = wandb.config.node_delete_prob
 
-    config.genome_config.conn_add_prob = wandb.config.conn_add_prob
-    config.genome_config.conn_delete_prob = wandb.config.conn_delete_prob
+    #config.genome_config.conn_add_prob = wandb.config.conn_add_prob
+    #config.genome_config.conn_delete_prob = wandb.config.conn_delete_prob
 
-    config.genome_config.bias_max_value = wandb.config.bias_max_value
-    config.genome_config.bias_min_value = -wandb.config.bias_max_value
+    #config.genome_config.bias_max_value = wandb.config.bias_max_value
+    #config.genome_config.bias_min_value = -wandb.config.bias_max_value
 
-    config.genome_config.weight_max_value = wandb.config.weight_max_value
-    config.genome_config.weight_min_value = -wandb.config.weight_max_value
+    #config.genome_config.weight_max_value = wandb.config.weight_max_value
+    #config.genome_config.weight_min_value = -wandb.config.weight_max_value
 
     config.reproduction_config.survival_threshold = wandb.config.survival_threshold
+    config.reproduction_config.pop_size = wandb.config.pop_size
 
     p = neat.Population(config)
 
