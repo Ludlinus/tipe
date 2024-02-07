@@ -6,9 +6,15 @@ import wandb
 
 wandb_API = wandb.Api()
 # sweep = wandb_API.project("sweat_pas_rose/TIPE-2").sweeps()[0]
-sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/8vbeeuy7")
+sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/sfe1nqpv")
 sweep_id = sweep.id
 
+counter = 3
+
+try:
+    os.mkdir("./saves")
+except FileExistsError:
+    pass
 
 class TrainingCycle:
     def __init__(self, taille, pos1, pos2, label1, label2):  # label 1/2: identifiant de l'agent 1/2
@@ -156,7 +162,7 @@ def entrainement():
     #config.genome_config.weight_min_value = -wandb.config.weight_max_value
 
     config.reproduction_config.survival_threshold = wandb.config.survival_threshold
-    config.reproduction_config.pop_size = wandb.config.pop_size
+    #config.reproduction_config.pop_size = wandb.config.pop_size
 
     p = neat.Population(config)
 
@@ -174,7 +180,7 @@ def entrainement():
 
 
 def main():
-    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose")
+    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count = counter)
 
 
 if __name__ == '__main__':
