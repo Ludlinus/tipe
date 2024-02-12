@@ -3,6 +3,3 @@
 Codé par LWJ et AdG pour leur TIPE.
 
 Entraine un réseau de neuronne sous NEAT pour répondre au problème du rdv dans un cycle de taille quelconque
-
-au jour d'aujourd'hui, la moyenne atteinte par le réseau est d'environ -40000
-

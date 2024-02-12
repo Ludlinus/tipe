@@ -4,11 +4,22 @@ import tqdm
 import neat_reporter
 import wandb
 
+import os
+import argparse
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument("--counter", action='store', default=1)
+args = parser.parse_args()
+
 wandb_API = wandb.Api()
 # sweep = wandb_API.project("sweat_pas_rose/TIPE-2").sweeps()[0]
 sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/8vbeeuy7")
 sweep_id = sweep.id
 
+try:
+    os.mkdir("./saves")
+except FileExistsError:
+    pass
 
 class TrainingCycle:
     def __init__(self, taille, pos1, pos2, label1, label2):  # label 1/2: identifiant de l'agent 1/2
@@ -169,7 +180,7 @@ def entrainement():
 
 
 def main():
-    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose")
+    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count=args.counter)
 
 
 if __name__ == '__main__':
