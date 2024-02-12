@@ -3,13 +3,13 @@ import tqdm
 
 import neat_reporter
 import wandb
+import os
 
 wandb_API = wandb.Api()
-# sweep = wandb_API.project("sweat_pas_rose/TIPE-2").sweeps()[0]
-sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/sfe1nqpv")
+sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/12mjhjtj")
 sweep_id = sweep.id
 
-counter = 3
+counter = 20
 
 try:
     os.mkdir("./saves")
@@ -35,55 +35,13 @@ liste_graphes = [
     TrainingCycle(10, 5, 2, 91, 0),
     TrainingCycle(10, 2, 7, 30, 92),
 ]
-liste_graphes_supplementaires = [
-    TrainingCycle(96, 10, 91, 91, 0),
-    TrainingCycle(15, 2, 13, 30, 92),
-    TrainingCycle(65, 27, 37, 43, 39),
-    TrainingCycle(13, 0, 8, 64, 36),
-    TrainingCycle(24, 11, 14, 54, 44),
-    TrainingCycle(61, 18, 44, 50, 86),
-    TrainingCycle(74, 14, 56, 36, 76),
-    TrainingCycle(84, 37, 58, 73, 92),
-    TrainingCycle(20, 0, 19, 17, 80),
-    TrainingCycle(99, 25, 58, 26, 58),
-    TrainingCycle(52, 12, 32, 69, 95),
-    TrainingCycle(62, 0, 57, 0, 31),
-    TrainingCycle(22, 2, 18, 98, 60),
-    TrainingCycle(28, 5, 24, 7, 9),
-    TrainingCycle(13, 2, 11, 16, 18),
-    TrainingCycle(31, 2, 24, 95, 93),
-    TrainingCycle(15, 5, 10, 76, 51),
-    TrainingCycle(63, 13, 60, 5, 51),
-    TrainingCycle(99, 43, 59, 92, 1),
-    TrainingCycle(46, 6, 30, 78, 41),
-    TrainingCycle(49, 23, 48, 26, 79),
-    TrainingCycle(82, 4, 59, 40, 0),
-    TrainingCycle(31, 9, 28, 70, 5),
-    TrainingCycle(21, 4, 14, 64, 78),
-    TrainingCycle(77, 34, 70, 72, 83),
-    TrainingCycle(53, 16, 34, 5, 95),
-    TrainingCycle(17, 8, 13, 35, 68),
-    TrainingCycle(55, 23, 51, 71, 76),
-    TrainingCycle(17, 2, 15, 35, 90),
-    TrainingCycle(88, 22, 65, 47, 19),
-    TrainingCycle(81, 10, 46, 29, 38),
-    TrainingCycle(29, 1, 23, 38, 97),
-    TrainingCycle(37, 2, 22, 30, 87),
-    TrainingCycle(65, 1, 65, 18, 96),
-    TrainingCycle(32, 11, 30, 17, 16),
-    TrainingCycle(97, 16, 55, 67, 6),
-    TrainingCycle(10, 3, 5, 37, 85),
-    TrainingCycle(67, 4, 50, 57, 88),
-    TrainingCycle(39, 2, 24, 85, 26),
-    TrainingCycle(42, 8, 27, 64, 26),
-    TrainingCycle(22, 3, 13, 8, 69)
-]
-
 
 def eval_genomes(genomes, config):
+    global generation
+    generation += 1
     for genomes_id, genome in tqdm.tqdm(genomes):
         genome.fitness = 0
-        for graphe in liste_graphes:
+        for graphe in liste_graphes[:generation//50]:
             label1, label2 = graphe.label1, graphe.label2  # label: identifiant dans le graphe évalué
             taille_cycle = graphe.taille  # taille du graphe évalué
             iterations_max = 1_000
@@ -136,10 +94,7 @@ def eval_genomes(genomes, config):
 
 def entrainement():
     run_name = sorted([run.name for run in sweep.runs], reverse= True)[1]
-    run_name = int(str(run_name)[-1]) + 1
-
-    #run_name = sorted([run.name for run in sweep.runs], reverse=True)[0]
-    #run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
+    run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
 
     wandb.init(name=run_name)
 
@@ -152,29 +107,21 @@ def entrainement():
     config.genome_config.node_add_prob = wandb.config.node_add_prob
     config.genome_config.node_delete_prob = wandb.config.node_delete_prob
 
-    #config.genome_config.conn_add_prob = wandb.config.conn_add_prob
-    #config.genome_config.conn_delete_prob = wandb.config.conn_delete_prob
-
-    #config.genome_config.bias_max_value = wandb.config.bias_max_value
-    #config.genome_config.bias_min_value = -wandb.config.bias_max_value
-
-    #config.genome_config.weight_max_value = wandb.config.weight_max_value
-    #config.genome_config.weight_min_value = -wandb.config.weight_max_value
-
     config.reproduction_config.survival_threshold = wandb.config.survival_threshold
-    #config.reproduction_config.pop_size = wandb.config.pop_size
+    config.pop_size = wandb.config.pop_size
+
+    generation = 0
 
     p = neat.Population(config)
 
     p.add_reporter(neat_reporter.WANDB_Reporter())
-    p.add_reporter(neat.checkpoint.Checkpointer(generation_interval=250, time_interval_seconds=None,
+    p.add_reporter(neat.checkpoint.Checkpointer(generation_interval=500, time_interval_seconds=None,
                                                 filename_prefix='saves/neat-checkpoint-'))
-
     artifactToSave = wandb.Artifact(name="neat_checkpoints_" + str(wandb.run.name), type="neat_checkpoints")
     artifactToSave.add_dir("saves")
     artifactToSave.save()
 
-    run_result = p.run(eval_genomes, 251)  # 1000 +1 pour être certain d'enregistrer le dernier checkpoint
+    run_result = p.run(eval_genomes, 501)  # 500 +1 pour être certain d'enregistrer le dernier checkpoint
 
     wandb.finish()
 
