@@ -1,9 +1,10 @@
+import os
+
 import neat
 import tqdm
 
 import neat_reporter
 import wandb
-import os
 
 wandb_API = wandb.Api()
 sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/12mjhjtj")
@@ -16,11 +17,15 @@ try:
 except FileExistsError:
     pass
 
+
 class TrainingCycle:
     def __init__(self, taille, pos1, pos2, label1, label2):  # label 1/2: identifiant de l'agent 1/2
         self.taille = taille
         self.pos1, self.pos2 = pos1, pos2
         self.label1, self.label2 = label1, label2
+
+    def starting_distance(self):
+        return min(abs(self.pos1 - self.pos2), abs(self.pos1 - self.taille) + abs(self.pos2 - self.taille))
 
 
 liste_graphes = [
@@ -36,18 +41,18 @@ liste_graphes = [
     TrainingCycle(10, 2, 7, 30, 92),
 ]
 
+
 def eval_genomes(genomes, config):
     global generation
     generation += 1
+
+    iterations_max = 1_000
+
     for genomes_id, genome in tqdm.tqdm(genomes):
         genome.fitness = 0
-        for graphe in liste_graphes[:generation//50]:
+        for graphe in liste_graphes[:(generation // 100) + 1]:
             label1, label2 = graphe.label1, graphe.label2  # label: identifiant dans le graphe évalué
             taille_cycle = graphe.taille  # taille du graphe évalué
-            iterations_max = 1_000
-
-            # agent1 = ag.Agent_NN(genome=genome, label=label1, config=config)
-            # agent2 = ag.Agent_NN(genome=genome, label=label2, config=config)
 
             etape = 0
             derniereAction_1 = 0
@@ -61,7 +66,7 @@ def eval_genomes(genomes, config):
 
             # Evaluation des réseaux
             iterations = 0
-            dist_min = abs(pos_1 - pos_2)  # distance de départ entre 1 et 2
+            dist_min = graphe.starting_distance()  # distance de départ entre 1 et 2
             while pos_1 != pos_2 and iterations <= iterations_max:  # stoppe au bout de 1000 itérations
 
                 out1 = nn1.activate([label1, etape, pos_1, derniereAction_1])
@@ -70,8 +75,6 @@ def eval_genomes(genomes, config):
                 derniereAction_1 = max(range(len(out1)), key=out1.__getitem__) - 1
                 derniereAction_2 = max(range(len(out2)), key=out2.__getitem__) - 1
 
-                # derniereAction_1 = max(range(len(out1)), key=out1.__getitem__)
-                # derniereAction_2 = max(range(len(out2)), key=out2.__getitem__)
 
                 pos_1 += derniereAction_1  # les agents se déplacent ou pas
                 pos_2 += derniereAction_2
@@ -80,7 +83,8 @@ def eval_genomes(genomes, config):
                 pos_2 %= taille_cycle
 
                 if abs(pos_1 - pos_2) < dist_min:
-                    dist_min = abs(pos_1 - pos_2)  # on enregistre la distance min atteinte par les agents
+                    dist_min = min(abs(pos_1 - pos_2), abs(pos_1 - taille_cycle) + abs(
+                        pos_2 - taille_cycle))  # on enregistre la distance min atteinte par les agents
 
                 iterations += 1
 
@@ -90,10 +94,11 @@ def eval_genomes(genomes, config):
                 genome.fitness -= iterations
             else:
                 genome.fitness -= iterations_max * dist_min
-
+        for graphe in liste_graphes[(generation // 100) + 1:]:
+            genome.fitness -= iterations_max * graphe.starting_distance()
 
 def entrainement():
-    run_name = sorted([run.name for run in sweep.runs], reverse= True)[1]
+    run_name = sorted([run.name for run in sweep.runs], reverse=True)[1]
     run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
 
     wandb.init(name=run_name)
@@ -110,8 +115,6 @@ def entrainement():
     config.reproduction_config.survival_threshold = wandb.config.survival_threshold
     config.pop_size = wandb.config.pop_size
 
-    generation = 0
-
     p = neat.Population(config)
 
     p.add_reporter(neat_reporter.WANDB_Reporter())
@@ -121,13 +124,16 @@ def entrainement():
     artifactToSave.add_dir("saves")
     artifactToSave.save()
 
-    run_result = p.run(eval_genomes, 501)  # 500 +1 pour être certain d'enregistrer le dernier checkpoint
+    run_result = p.run(eval_genomes, 1000 + 1)  # 1000 +1 pour être certain d'enregistrer le dernier checkpoint
 
     wandb.finish()
 
 
+generation = 0
+
+
 def main():
-    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count = counter)
+    wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count=counter)
 
 
 if __name__ == '__main__':
