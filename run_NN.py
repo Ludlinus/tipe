@@ -32,25 +32,15 @@ liste_graphes = [
     TrainingCycle(10, 3, 7, 39, 56),
     TrainingCycle(20, 18, 5, 85, 20),
     TrainingCycle(30, 22, 7, 6, 7),
-    TrainingCycle(30, 10, 29, 52, 98),
-    TrainingCycle(40, 7, 20, 23, 27),
-    TrainingCycle(40, 3, 15, 78, 18),
-    TrainingCycle(50, 1, 34, 78, 79),
-    TrainingCycle(50, 3, 6, 77, 3),
-    TrainingCycle(10, 5, 2, 91, 0),
-    TrainingCycle(10, 2, 7, 30, 92),
 ]
 
 
 def eval_genomes(genomes, config):
-    global generation
-    generation += 1
-
     iterations_max = 1_000
 
     for genomes_id, genome in tqdm.tqdm(genomes):
         genome.fitness = 0
-        for graphe in liste_graphes[:(generation // 100) + 1]:
+        for graphe in liste_graphes:
             label1, label2 = graphe.label1, graphe.label2  # label: identifiant dans le graphe évalué
             taille_cycle = graphe.taille  # taille du graphe évalué
 
@@ -94,8 +84,6 @@ def eval_genomes(genomes, config):
                 genome.fitness -= iterations
             else:
                 genome.fitness -= iterations_max * dist_min
-        for graphe in liste_graphes[(generation // 100) + 1:]:
-            genome.fitness -= iterations_max * graphe.starting_distance()
 
 def entrainement():
     run_name = sorted([run.name for run in sweep.runs], reverse=True)[1]
@@ -124,13 +112,9 @@ def entrainement():
     artifactToSave.add_dir("saves")
     artifactToSave.save()
 
-    run_result = p.run(eval_genomes, 1000 + 1)  # 1000 +1 pour être certain d'enregistrer le dernier checkpoint
+    run_result = p.run(eval_genomes, 10_000 + 1)  # 1000 +1 pour être certain d'enregistrer le dernier checkpoint
 
     wandb.finish()
-
-
-generation = 0
-
 
 def main():
     wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count=counter)
