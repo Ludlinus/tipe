@@ -60,7 +60,6 @@ def eval_genomes(genomes, config):
                 derniereAction_1 = max(range(len(out1)), key=out1.__getitem__) - 1
                 derniereAction_2 = max(range(len(out2)), key=out2.__getitem__) - 1
 
-
                 pos_1 += derniereAction_1  # les agents se déplacent ou pas
                 pos_2 += derniereAction_2
 
@@ -80,29 +79,29 @@ def eval_genomes(genomes, config):
             else:
                 genome.fitness -= iterations_max * dist_min
 
+
 def entrainement():
     previous_names = [run.name for run in sweep.runs]
     previous_numbers = []
     prefix = ''
     for name in previous_names:
         try:
-            previous_numbers.append(int(name[name.rfind('.')+1:]))
-            prefix = name[:name.rfind('.')+1]
+            previous_numbers.append(int(name[name.rfind('.') + 1:]))
+            prefix = name[:name.rfind('.') + 1]
         except ValueError:
             pass
     run_name = prefix + str(max(previous_numbers) + 1)
 
-    #run_name = sorted([int(run.name[run.name.rfind('.')+1:]) for run in sweep.runs], reverse=True)[1]
-    #run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
+    # run_name = sorted([int(run.name[run.name.rfind('.')+1:]) for run in sweep.runs], reverse=True)[1]
+    # run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
 
     wandb.init(name=run_name)
 
     try:
-        os.mkdir("./saves-"+run_name)
+        os.mkdir("./saves-" + run_name)
     except FileExistsError:
         print("FICHIER SAVES EXISTANT : MAUVAIS NOM DE RUN ?")
         time.sleep(5)
-
 
     config_file = "config_1.txt"
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -122,14 +121,15 @@ def entrainement():
     p.add_reporter(neat_reporter.StdOutReporterPeriodique(show_species_detail=True, periode=10))
 
     p.add_reporter(neat.checkpoint.Checkpointer(generation_interval=1000, time_interval_seconds=None,
-                                                filename_prefix='saves/neat-checkpoint-'+str(wandb.run.name)+'-'))
+                                                filename_prefix='saves/neat-checkpoint-' + str(wandb.run.name) + '-'))
     artifactToSave = wandb.Artifact(name="neat_checkpoints_" + str(wandb.run.name), type="neat_checkpoints")
-    artifactToSave.add_dir("saves-"+run_name)
+    artifactToSave.add_dir("saves-" + run_name)
     artifactToSave.save()
 
     run_result = p.run(eval_genomes, 10_000 + 1)  # 10000 +1 pour être certain d'enregistrer le dernier checkpoint
 
     wandb.finish()
+
 
 def main():
     wandb.agent(sweep_id=sweep_id, function=entrainement, project="TIPE-2", entity="sweat_pas_rose", count=counter)
