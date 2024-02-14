@@ -82,6 +82,7 @@ class StdOutReporterPeriodique(reporting.BaseReporter):
         self.generation_times = self.generation_times[-10:]
         average = sum(self.generation_times) / len(self.generation_times)
         print('Deleted stagnant : {0:d}'.format(self.total_stagnant))
+        self.total_stagnant = 0
         if len(self.generation_times) > 1:
             print("Generation time: {0:.3f} sec ({1:.3f} average)".format(elapsed, average))
         else:
