@@ -123,9 +123,11 @@ def entrainement():
     p.add_reporter(neat.checkpoint.Checkpointer(generation_interval=1000, time_interval_seconds=None,
                                                 filename_prefix='saves-' + run_name + '/neat-checkpoint-' + str(
                                                     wandb.run.name) + '-'))
-    artifactToSave = wandb.Artifact(name="neat_checkpoints_" + str(wandb.run.name), type="neat_checkpoints")
-    artifactToSave.add_dir("saves-" + run_name)
-    artifactToSave.save()
+
+    wandb.save("./saves-"+str(run_name)+"/*", policy="live")
+    #artifactToSave = wandb.Artifact(name="neat_checkpoints_" + str(wandb.run.name), type="neat_checkpoints")
+    #artifactToSave.add_dir("saves-" + run_name)
+    #artifactToSave.save()
 
     run_result = p.run(eval_genomes, 10_000 + 1)  # 10000 +1 pour être certain d'enregistrer le dernier checkpoint
 
