@@ -133,14 +133,10 @@ def entrainement():
     p.add_reporter(neat_reporter.WANDB_Reporter())
     p.add_reporter(neat_reporter.StdOutReporterPeriodique(show_species_detail=True, periode=10))
 
-    p.add_reporter(neat.checkpoint.Checkpointer(generation_interval=1000, time_interval_seconds=None,
+    p.add_reporter(neat_reporter.WANDB_Checkpointer(generation_interval=1000, time_interval_seconds=None,
                                                 filename_prefix='saves-' + run_name + '/neat-checkpoint-' + str(
                                                     wandb.run.name) + '-'))
 
-    # endregion
-
-    # region Lancement de la sauvegarde des checkpoints par WANDB
-    wandb.save("./saves-"+str(run_name)+"/*", policy="live")
     # endregion
 
     run_result = p.run(eval_genomes, 10_000 + 1)  # 10000 +1 pour être certain d'enregistrer le dernier checkpoint

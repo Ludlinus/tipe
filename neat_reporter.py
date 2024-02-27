@@ -1,7 +1,11 @@
 import wandb
 from neat.math_util import mean, stdev
 import neat.reporting as reporting
+import neat.checkpoint as checkpointing
 import time
+import pickle
+import gzip
+import random
 
 
 class WANDB_Reporter(object):
@@ -14,15 +18,15 @@ class WANDB_Reporter(object):
 
     def post_evaluate(self, config, population, species, best_genome):
         fitnesses = [c.fitness for c in population.values()]
-        #fit_mean = mean(fitnesses)
-        #fit_std = stdev(fitnesses)
-        #nbOfSpecies = len(species_set.species)
+        # fit_mean = mean(fitnesses)
+        # fit_std = stdev(fitnesses)
+        # nbOfSpecies = len(species_set.species)
 
         wandb.log({
             "epoch": self.generation,
             "fit_mean": mean(fitnesses),
             "fit_std": stdev(fitnesses),
-            "nbOfSpecies":len(species.species)
+            "nbOfSpecies": len(species.species)
         })
 
     def post_reproduction(self, config, population, species):
@@ -39,6 +43,7 @@ class WANDB_Reporter(object):
 
     def info(self, msg):
         pass
+
 
 class StdOutReporterPeriodique(reporting.BaseReporter):
     """Uses `print` to output information about the run; an example reporter class.
@@ -116,3 +121,19 @@ class StdOutReporterPeriodique(reporting.BaseReporter):
 
     def info(self, msg):
         pass
+
+
+class WANDB_Checkpointer(checkpointing.Checkpointer):
+    def __init__(self, generation_interval=100, time_interval_seconds=300,
+                 filename_prefix='neat-checkpoint-'):
+        super().__init__(generation_interval, time_interval_seconds, filename_prefix)
+    def save_checkpoint(self, config, population, species_set, generation):
+        """ Save the current simulation state. """
+        filename = '{0}{1}'.format(self.filename_prefix, generation)
+        print("Saving checkpoint to {0}".format(filename))
+
+        with gzip.open(filename, 'w', compresslevel=5) as f:
+            data = (generation, config, population, species_set, random.getstate())
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        wandb.save(filename, policy='now')
