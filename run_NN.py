@@ -81,6 +81,9 @@ def eval_genomes(genomes, config):
 
 
 def entrainement():
+
+    # region Definition du nom de run
+
     previous_names = [run.name for run in sweep.runs]
     previous_numbers = []
     prefix = ''
@@ -92,22 +95,28 @@ def entrainement():
             pass
     run_name = prefix + str(max(previous_numbers) + 1)
 
-    # run_name = sorted([int(run.name[run.name.rfind('.')+1:]) for run in sweep.runs], reverse=True)[1]
-    # run_name = run_name[:run_name.rfind('.')] + "." + str(int(run_name[run_name.rfind('.') + 1:]) + 1)
+    # endregion
 
     wandb.init(name=run_name)
 
+    # region Création du dossier pour les sauvegardes
     try:
         os.mkdir("./saves-" + run_name)
     except FileExistsError:
         print("FICHIER SAVES EXISTANT : MAUVAIS NOM DE RUN ?")
         time.sleep(5)
 
+    # endregion
+
+    # region Création de la configurtation NEAT depuis config_1.txt
+
     config_file = "config_1.txt"
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
-    # Chargement des hyper-parametres spécifiques depuis WANDB
+    # endregion
+
+    # region Chargement des hyper-parametres depuis WANDB
 
     config.genome_config.node_add_prob = wandb.config.node_add_prob
     config.genome_config.node_delete_prob = wandb.config.node_delete_prob
@@ -115,7 +124,11 @@ def entrainement():
     config.reproduction_config.survival_threshold = wandb.config.survival_threshold
     config.pop_size = wandb.config.pop_size
 
+    # endregion
+
     p = neat.Population(config)
+
+    # region Ajout des reporters (WANDB, stdout, et checkpoint)
 
     p.add_reporter(neat_reporter.WANDB_Reporter())
     p.add_reporter(neat_reporter.StdOutReporterPeriodique(show_species_detail=True, periode=10))
@@ -124,10 +137,11 @@ def entrainement():
                                                 filename_prefix='saves-' + run_name + '/neat-checkpoint-' + str(
                                                     wandb.run.name) + '-'))
 
+    # endregion
+
+    # region Lancement de la sauvegarde des checkpoints par WANDB
     wandb.save("./saves-"+str(run_name)+"/*", policy="live")
-    #artifactToSave = wandb.Artifact(name="neat_checkpoints_" + str(wandb.run.name), type="neat_checkpoints")
-    #artifactToSave.add_dir("saves-" + run_name)
-    #artifactToSave.save()
+    # endregion
 
     run_result = p.run(eval_genomes, 10_000 + 1)  # 10000 +1 pour être certain d'enregistrer le dernier checkpoint
 
