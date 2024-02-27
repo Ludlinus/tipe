@@ -10,7 +10,7 @@ wandb_API = wandb.Api()
 sweep = wandb_API.sweep("sweat_pas_rose/TIPE-2/12mjhjtj")
 sweep_id = sweep.id
 
-counter = 1
+counter = 10
 
 
 class TrainingCycle:
