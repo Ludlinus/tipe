@@ -1,14 +1,23 @@
-import wandb
-from neat.math_util import mean, stdev
-import neat.reporting as reporting
-import neat.checkpoint as checkpointing
-import time
-import pickle
 import gzip
+import pickle
 import random
+import time
+
+import neat.checkpoint as checkpointing
+import neat.reporting as reporting
+from neat.math_util import mean, stdev
+
+import wandb
 
 
 class WANDB_Reporter(object):
+    def __init__(self, intervalle_de_validation=None, fonction_de_validation=None):
+        if intervalle_de_validation == None or fonction_de_validation == None:
+            self.validation = False
+        else:
+            self.validation = True
+            self.intervalle_de_validation = intervalle_de_validation
+            self.fonction_de_validation = fonction_de_validation
 
     def start_generation(self, generation):
         self.generation = generation
@@ -18,16 +27,22 @@ class WANDB_Reporter(object):
 
     def post_evaluate(self, config, population, species, best_genome):
         fitnesses = [c.fitness for c in population.values()]
-        # fit_mean = mean(fitnesses)
-        # fit_std = stdev(fitnesses)
-        # nbOfSpecies = len(species_set.species)
 
-        wandb.log({
+        log = {
             "epoch": self.generation,
             "fit_mean": mean(fitnesses),
             "fit_std": stdev(fitnesses),
             "nbOfSpecies": len(species.species)
-        })
+        }
+
+        if self.validation and self.generation % self.intervalle_de_validation == 0:
+            fitnesses_validation = self.fonction_de_validation(
+                [(genome_id, population[genome_id]) for genome_id in population], config)
+            log["validation_fit_mean"] = mean(fitnesses_validation.values())
+            log["validation_fit_std"] = stdev(fitnesses_validation.values())
+            log["validation_fit_best"] = fitnesses_validation[best_genome.key]
+
+        wandb.log(log)
 
     def post_reproduction(self, config, population, species):
         pass
@@ -127,6 +142,7 @@ class WANDB_Checkpointer(checkpointing.Checkpointer):
     def __init__(self, generation_interval=100, time_interval_seconds=300,
                  filename_prefix='neat-checkpoint-'):
         super().__init__(generation_interval, time_interval_seconds, filename_prefix)
+
     def save_checkpoint(self, config, population, species_set, generation):
         """ Save the current simulation state. """
         filename = '{0}{1}'.format(self.filename_prefix, generation)
