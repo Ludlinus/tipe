@@ -32,7 +32,8 @@ class WANDB_Reporter(object):
             "epoch": self.generation,
             "fit_mean": mean(fitnesses),
             "fit_std": stdev(fitnesses),
-            "nbOfSpecies": len(species.species)
+            "nbOfSpecies": len(species.species),
+            "fit_best" : best_genome.fitness
         }
 
         if self.validation and self.generation % self.intervalle_de_validation == 0:
